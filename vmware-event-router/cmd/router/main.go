@@ -173,15 +173,19 @@ func main() {
 	default:
 		log.Fatalf("invalid type specified: %q", cfg.EventProcessor.Type)
 	}
-
+	log.Infof("Metrics type: %q", cfg.MetricsProvider.Type)
+	log.Infof("Metrics - default : %q", cfg.MetricsProvider.Default)
+	log.Infof("Metrics - prometheus : %q", cfg.MetricsProvider.Prometheus)
 	// set up metrics provider (only supporting default for now)
 	switch cfg.MetricsProvider.Type {
 	case config.MetricsProviderDefault:
+		log.Infof("Entering %q metrics server block", cfg.MetricsProvider.Type)
 		ms, err = metrics.NewServer(cfg.MetricsProvider.Default, logger.Sugar())
 		if err != nil {
 			log.Fatalf("could not initialize metrics server: %v", err)
 		}
 	case config.MetricsProviderPrometheus:
+		log.Infof("Entering %q metrics server block", cfg.MetricsProvider.Type)
 		ps, err = prometheus.NewServer(cfg.MetricsProvider.Prometheus, logger.Sugar())
 		if err != nil {
 			log.Fatalf("could not initialize metrics server: %v", err)
@@ -196,9 +200,7 @@ func main() {
 		log.Fatal("no valid configuration for event provider found")
 	case proc == nil:
 		log.Fatal("no valid configuration for event processor found")
-	case ms == nil:
-		fallthrough
-	case ps == nil:
+	case ms == nil && ps == nil:
 		log.Fatal("no valid configuration for metrics server found")
 	}
 

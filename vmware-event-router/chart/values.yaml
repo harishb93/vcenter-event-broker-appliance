@@ -117,6 +117,7 @@ eventrouter:
         namespace: default
 
   # metrics server default settings (uses default/internal metrics server)
+  metricsProvider: default
   metrics:
     type: ClusterIP
     port: 8082

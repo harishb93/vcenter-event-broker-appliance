@@ -74,7 +74,13 @@ eventProcessor:
     {{- end }}
   {{- end }}
 metricsProvider:
-  type: default
+  type: {{ .Values.eventrouter.metricsProvider }}
   name: veba-demo-metrics
+  {{- if eq .Values.eventrouter.metricsProvider "default" }}
   default:
     bindAddress: 0.0.0.0:{{ .Values.eventrouter.metrics.port }}
+  {{- end }}
+  {{- if eq .Values.eventrouter.metricsProvider "prometheus" }}
+  prometheus:
+    bindAddress: 0.0.0.0:{{ .Values.eventrouter.metrics.port }}
+  {{- end }}

@@ -1,0 +1,26 @@
+image:
+  pullPolicy: IfNotPresent
+  fullImage: ko://github.com/vmware-samples/vcenter-event-broker-appliance/vmware-event-router/cmd/router
+
+eventrouter:
+  config:
+    logLevel: debug
+  eventProvider: webhook
+  # eventProvider: horizon
+  # horizon:
+  #   address: https://10.153.252.17:15443
+  #   insecure: true
+  #   domain: "corp"
+  #   username: "administrator"
+  #   password: "VMware1!"
+  eventProcessor: knative
+  knative:
+    destination:
+      ref:
+        apiVersion: eventing.knative.dev/v1
+        kind: Broker
+        name: example-broker
+        namespace: default
+  metricsProvider: prometheus
+  metrics:
+    port: 9090
