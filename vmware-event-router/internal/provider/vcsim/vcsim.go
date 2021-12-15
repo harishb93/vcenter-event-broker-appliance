@@ -191,7 +191,7 @@ func (vcsim *EventStream) PushMetrics(ctx context.Context, ms metrics.Receiver) 
 			vcsim.Lock()
 			eventsSec := math.Round((float64(*vcsim.stats.EventsTotal)/time.Since(vcsim.stats.Started).Seconds())*100) / 100 // 0.2f syntax
 			vcsim.stats.EventsSec = &eventsSec
-			ms.Receive(&vcsim.stats)
+			ms.Process(&vcsim.stats)
 			vcsim.Unlock()
 		}
 	}

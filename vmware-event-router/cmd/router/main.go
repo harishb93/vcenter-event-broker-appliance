@@ -5,6 +5,9 @@ import (
 	"errors"
 	"flag"
 	"fmt"
+	"github.com/vmware-samples/vcenter-event-broker-appliance/vmware-event-router/internal/metrics"
+	"github.com/vmware-samples/vcenter-event-broker-appliance/vmware-event-router/internal/metrics/embedded"
+	"github.com/vmware-samples/vcenter-event-broker-appliance/vmware-event-router/internal/metrics/prometheus"
 	"os"
 
 	"go.uber.org/zap"
@@ -15,8 +18,6 @@ import (
 	"github.com/vmware-samples/vcenter-event-broker-appliance/vmware-event-router/internal/provider/horizon"
 
 	config "github.com/vmware-samples/vcenter-event-broker-appliance/vmware-event-router/internal/config/v1alpha1"
-	"github.com/vmware-samples/vcenter-event-broker-appliance/vmware-event-router/internal/metrics"
-	"github.com/vmware-samples/vcenter-event-broker-appliance/vmware-event-router/internal/metrics/prometheus"
 	"github.com/vmware-samples/vcenter-event-broker-appliance/vmware-event-router/internal/processor"
 	"github.com/vmware-samples/vcenter-event-broker-appliance/vmware-event-router/internal/processor/aws"
 	"github.com/vmware-samples/vcenter-event-broker-appliance/vmware-event-router/internal/processor/knative"
@@ -99,11 +100,26 @@ func main() {
 	var (
 		prov provider.Provider
 		proc processor.Processor
-		ms   *metrics.Server // allows nil check
-		ps   *prometheus.Server
+		ms   metrics.Receiver // allows nil check
 	)
 
 	ctx := signals.NewContext()
+
+	// set up metrics provider (only supporting embedded for now)
+	switch cfg.MetricsProvider.Type {
+	case config.MetricsProviderDefault:
+		ms, err = embedded.NewServer(cfg.MetricsProvider.Default, logger.Sugar())
+		if err != nil {
+			log.Fatalf("could not initialize metrics server: %v", err)
+		}
+	case config.MetricsProviderPrometheus:
+		ms, err = prometheus.NewServer(cfg.MetricsProvider.Prometheus, logger.Sugar())
+		if err != nil {
+			log.Fatalf("could not initialize metrics server: %v", err)
+		}
+	default:
+		log.Fatalf("invalid type specified: %q", cfg.MetricsProvider.Type)
+	}
 
 	// set up event provider
 	switch cfg.EventProvider.Type {
@@ -173,26 +189,6 @@ func main() {
 	default:
 		log.Fatalf("invalid type specified: %q", cfg.EventProcessor.Type)
 	}
-	log.Infof("Metrics type: %q", cfg.MetricsProvider.Type)
-	log.Infof("Metrics - default : %q", cfg.MetricsProvider.Default)
-	log.Infof("Metrics - prometheus : %q", cfg.MetricsProvider.Prometheus)
-	// set up metrics provider (only supporting default for now)
-	switch cfg.MetricsProvider.Type {
-	case config.MetricsProviderDefault:
-		log.Infof("Entering %q metrics server block", cfg.MetricsProvider.Type)
-		ms, err = metrics.NewServer(cfg.MetricsProvider.Default, logger.Sugar())
-		if err != nil {
-			log.Fatalf("could not initialize metrics server: %v", err)
-		}
-	case config.MetricsProviderPrometheus:
-		log.Infof("Entering %q metrics server block", cfg.MetricsProvider.Type)
-		ps, err = prometheus.NewServer(cfg.MetricsProvider.Prometheus, logger.Sugar())
-		if err != nil {
-			log.Fatalf("could not initialize metrics server: %v", err)
-		}
-	default:
-		log.Fatalf("invalid type specified: %q", cfg.MetricsProvider.Type)
-	}
 
 	// validate if the configuration provided is complete
 	switch {
@@ -200,7 +196,7 @@ func main() {
 		log.Fatal("no valid configuration for event provider found")
 	case proc == nil:
 		log.Fatal("no valid configuration for event processor found")
-	case ms == nil && ps == nil:
+	case ms == nil:
 		log.Fatal("no valid configuration for metrics server found")
 	}
 
@@ -208,10 +204,7 @@ func main() {
 
 	// metrics server
 	eg.Go(func() error {
-		if ms != nil {
-			return ms.Run(egCtx)
-		}
-		return ps.Run(egCtx)
+		return ms.Run(egCtx)
 	})
 
 	// event stream

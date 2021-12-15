@@ -361,7 +361,7 @@ func (eb *EventBridgeProcessor) PushMetrics(ctx context.Context, ms metrics.Rece
 			return
 		case <-ticker.C:
 			eb.mu.RLock()
-			ms.Receive(&eb.stats)
+			ms.Process(&eb.stats)
 			eb.mu.RUnlock()
 		}
 	}

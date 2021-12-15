@@ -392,7 +392,7 @@ func (vc *EventStream) PushMetrics(ctx context.Context, ms metrics.Receiver) {
 			vc.Lock()
 			eventsSec := math.Round((float64(*vc.stats.EventsTotal)/time.Since(vc.stats.Started).Seconds())*100) / 100 // 0.2f syntax
 			vc.stats.EventsSec = &eventsSec
-			ms.Receive(&vc.stats)
+			ms.Process(&vc.stats)
 			vc.Unlock()
 		}
 	}

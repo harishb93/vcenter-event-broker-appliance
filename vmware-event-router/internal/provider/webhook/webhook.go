@@ -214,7 +214,7 @@ func (s *Server) PushMetrics(ctx context.Context, ms metrics.Receiver) {
 			s.Lock()
 			eventsSec := math.Round((float64(*s.stats.EventsTotal)/time.Since(s.stats.Started).Seconds())*100) / 100 // 0.2f syntax
 			s.stats.EventsSec = &eventsSec
-			ms.Receive(&s.stats)
+			ms.Process(&s.stats)
 			s.Unlock()
 		}
 	}

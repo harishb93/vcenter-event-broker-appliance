@@ -3,6 +3,7 @@ package prometheus
 import (
 	"context"
 	"fmt"
+	"github.com/vmware-samples/vcenter-event-broker-appliance/vmware-event-router/internal/metrics"
 	"net/http"
 	"time"
 
@@ -12,28 +13,17 @@ import (
 	"github.com/prometheus/client_golang/prometheus/promhttp"
 	config "github.com/vmware-samples/vcenter-event-broker-appliance/vmware-event-router/internal/config/v1alpha1"
 	"github.com/vmware-samples/vcenter-event-broker-appliance/vmware-event-router/internal/logger"
-	"github.com/vmware-samples/vcenter-event-broker-appliance/vmware-event-router/internal/metrics"
 )
 
 const (
-	// DefaultListenAddress is the default address the http metrics server will listen
+	// DefaultListenAddress is the embedded address the http metrics server will listen
 	// for requests
 	httpTimeout = time.Second * 5
 	endpoint    = "/metrics"
 )
 
-// Receiver receives metrics from metric providers
-type Receiver interface {
-	Receive(stats *metrics.EventStats)
-}
-
-// verify that metrics server implements Receiver
-var _ Receiver = (*Server)(nil)
-
-// Server is the implementation of the metrics server
 type Server struct {
-	http *http.Server
-	logger.Logger
+	*metrics.Server
 }
 
 // NewServer returns an initialized prometheus metrics server binding to addr
@@ -52,13 +42,16 @@ func NewServer(cfg *config.MetricsProviderConfigPrometheus, log logger.Logger) (
 	mux.Handle(endpoint, promhttp.Handler())
 
 	srv := &Server{
-		http: &http.Server{
-			Addr:         cfg.BindAddress,
-			Handler:      mux,
-			ReadTimeout:  httpTimeout,
-			WriteTimeout: httpTimeout,
+		&metrics.Server{
+			Http: &http.Server{
+				Addr:         cfg.BindAddress,
+				Handler:      mux,
+				ReadTimeout:  httpTimeout,
+				WriteTimeout: httpTimeout,
+			},
+			Logger:              metricLog,
+			MetricsProviderType: config.MetricsProviderPrometheus,
 		},
-		Logger: metricLog,
 	}
 
 	return srv, nil
@@ -71,10 +64,10 @@ func (s *Server) Run(ctx context.Context) error {
 	defer close(errCh)
 
 	go func() {
-		addr := fmt.Sprintf("http://%s%s", s.http.Addr, endpoint)
+		addr := fmt.Sprintf("http://%s%s", s.Http.Addr, endpoint)
 		s.Infow("starting prometheus metrics server", "address", addr)
 
-		err := s.http.ListenAndServe()
+		err := s.Http.ListenAndServe()
 		if err != nil && err != http.ErrServerClosed {
 			errCh <- err
 		}
@@ -87,7 +80,7 @@ func (s *Server) Run(ctx context.Context) error {
 
 	select {
 	case <-ctx.Done():
-		err := s.http.Shutdown(ctx)
+		err := s.Http.Shutdown(ctx)
 		if err != nil && err != http.ErrServerClosed {
 			return errors.Wrap(err, "could not shutdown prometheus metrics server gracefully")
 		}
@@ -99,11 +92,11 @@ func (s *Server) Run(ctx context.Context) error {
 }
 
 func (s *Server) publish(ctx context.Context) {
-	//publish metrics to endpoint using exporters??
+	//publish metrics providers and processors as labels and counters
 }
 
-// Receive receives metrics from event streams and processors
+// Process receives metrics from event streams and processors
 // The sender is responsible for picking a unique Provider name.
-func (s *Server) Receive(stats *metrics.EventStats) {
+func (s *Server) Process(stats *metrics.EventStats) {
 	//Logic for Receiving stats
 }

@@ -205,7 +205,7 @@ func (p *Processor) PushMetrics(ctx context.Context, ms metrics.Receiver) {
 			return
 		case <-ticker.C:
 			p.mu.RLock()
-			ms.Receive(&p.stats)
+			ms.Process(&p.stats)
 			p.mu.RUnlock()
 		}
 	}
