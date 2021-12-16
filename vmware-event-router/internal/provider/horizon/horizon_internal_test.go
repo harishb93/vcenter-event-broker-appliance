@@ -32,7 +32,7 @@ func TestNewEventStream(t *testing.T) {
 	type args struct {
 		ctx  context.Context
 		cfg  *config.ProviderConfigHorizon
-		ms   metrics.Receiver
+		ms   metrics.Processor
 		log  logger.Logger
 		opts []Option
 	}
@@ -235,7 +235,7 @@ func (f *fakeProcessor) Process(_ context.Context, ce ce.Event) error {
 	return nil
 }
 
-func (f *fakeProcessor) PushMetrics(_ context.Context, _ metrics.Receiver) {}
+func (f *fakeProcessor) PushMetrics(_ context.Context, _ metrics.Processor) {}
 
 func (f *fakeProcessor) Shutdown(_ context.Context) error {
 	return nil

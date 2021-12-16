@@ -5,10 +5,11 @@ import (
 	"errors"
 	"flag"
 	"fmt"
+	"os"
+
 	"github.com/vmware-samples/vcenter-event-broker-appliance/vmware-event-router/internal/metrics"
 	"github.com/vmware-samples/vcenter-event-broker-appliance/vmware-event-router/internal/metrics/embedded"
 	"github.com/vmware-samples/vcenter-event-broker-appliance/vmware-event-router/internal/metrics/prometheus"
-	"os"
 
 	"go.uber.org/zap"
 	"go.uber.org/zap/zapcore"
@@ -100,7 +101,7 @@ func main() {
 	var (
 		prov provider.Provider
 		proc processor.Processor
-		ms   metrics.Receiver // allows nil check
+		ms   metrics.Processor
 	)
 
 	ctx := signals.NewContext()

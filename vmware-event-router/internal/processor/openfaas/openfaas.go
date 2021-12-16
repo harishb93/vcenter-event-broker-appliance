@@ -77,7 +77,7 @@ type Processor struct {
 }
 
 // NewProcessor returns an OpenFaaS processor for the given configuration.
-func NewProcessor(ctx context.Context, cfg *config.ProcessorConfigOpenFaaS, ms metrics.Receiver, log logger.Logger, opts ...Option) (*Processor, error) {
+func NewProcessor(ctx context.Context, cfg *config.ProcessorConfigOpenFaaS, ms metrics.Processor, log logger.Logger, opts ...Option) (*Processor, error) {
 	ofLog := log
 	if zapSugared, ok := log.(*zap.SugaredLogger); ok {
 		proc := strings.ToUpper(string(config.ProcessorOpenFaaS))
@@ -270,7 +270,7 @@ func handleEvent(event cloudevents.Event) (string, []byte, error) {
 }
 
 // PushMetrics pushes metrics to the specified metrics receiver
-func (p *Processor) PushMetrics(ctx context.Context, ms metrics.Receiver) {
+func (p *Processor) PushMetrics(ctx context.Context, ms metrics.Processor) {
 	ticker := time.NewTicker(metrics.PushInterval)
 	defer ticker.Stop()
 

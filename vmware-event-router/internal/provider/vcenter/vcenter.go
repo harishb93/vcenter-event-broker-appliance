@@ -67,7 +67,7 @@ var _ provider.Provider = (*EventStream)(nil)
 
 // NewEventStream returns a vCenter event stream manager for a given
 // configuration and metrics server
-func NewEventStream(ctx context.Context, cfg *config.ProviderConfigVCenter, ms metrics.Receiver, log logger.Logger, opts ...Option) (*EventStream, error) {
+func NewEventStream(ctx context.Context, cfg *config.ProviderConfigVCenter, ms metrics.Processor, log logger.Logger, opts ...Option) (*EventStream, error) {
 	if cfg == nil {
 		return nil, errors.New("vCenter configuration must be provided")
 	}
@@ -380,7 +380,7 @@ func (vc *EventStream) Shutdown(ctx context.Context) error {
 }
 
 // PushMetrics pushes metrics to the configured metrics receiver
-func (vc *EventStream) PushMetrics(ctx context.Context, ms metrics.Receiver) {
+func (vc *EventStream) PushMetrics(ctx context.Context, ms metrics.Processor) {
 	ticker := time.NewTicker(metrics.PushInterval)
 	defer ticker.Stop()
 

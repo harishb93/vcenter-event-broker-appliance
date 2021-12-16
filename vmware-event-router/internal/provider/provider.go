@@ -10,7 +10,7 @@ import (
 // Provider manages the connection to an event provider and passes events to an
 // event processor.
 type Provider interface {
-	PushMetrics(context.Context, metrics.Receiver)
+	PushMetrics(context.Context, metrics.Processor)
 	Stream(context.Context, processor.Processor) error
 	Shutdown(context.Context) error
 }

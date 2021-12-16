@@ -53,7 +53,7 @@ type EventStream struct {
 
 // NewEventStream returns a Horizon event stream manager for the given
 // configuration and metrics server
-func NewEventStream(ctx context.Context, cfg *config.ProviderConfigHorizon, ms metrics.Receiver, log logger.Logger, opts ...Option) (*EventStream, error) {
+func NewEventStream(ctx context.Context, cfg *config.ProviderConfigHorizon, ms metrics.Processor, log logger.Logger, opts ...Option) (*EventStream, error) {
 	if cfg == nil {
 		return nil, errors.New("horizon configuration must be provided")
 	}
@@ -135,7 +135,7 @@ func NewEventStream(ctx context.Context, cfg *config.ProviderConfigHorizon, ms m
 }
 
 // PushMetrics periodically pushes metrics to the metrics server
-func (es *EventStream) PushMetrics(ctx context.Context, ms metrics.Receiver) {
+func (es *EventStream) PushMetrics(ctx context.Context, ms metrics.Processor) {
 	ticker := es.clock.Ticker(metrics.PushInterval)
 	defer ticker.Stop()
 

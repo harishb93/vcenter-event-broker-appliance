@@ -163,7 +163,7 @@ func (f *fakeProcessor) Process(ctx context.Context, ce cloudevents.Event) error
 	return nil
 }
 
-func (f *fakeProcessor) PushMetrics(_ context.Context, _ metrics.Receiver) {
+func (f *fakeProcessor) PushMetrics(_ context.Context, _ metrics.Processor) {
 }
 
 func (f *fakeProcessor) Shutdown(_ context.Context) error {

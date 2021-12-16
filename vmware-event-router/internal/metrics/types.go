@@ -2,9 +2,6 @@ package metrics
 
 import (
 	"encoding/json"
-	config "github.com/vmware-samples/vcenter-event-broker-appliance/vmware-event-router/internal/config/v1alpha1"
-	"github.com/vmware-samples/vcenter-event-broker-appliance/vmware-event-router/internal/logger"
-	"net/http"
 	"time"
 )
 
@@ -13,13 +10,6 @@ const (
 	// push their metrics to the server
 	PushInterval = time.Second * 1
 )
-
-// Server is the implementation of the metrics server
-type Server struct {
-	Http *http.Server
-	logger.Logger
-	config.MetricsProviderType
-}
 
 // InvocationDetails contains success and failure information
 type InvocationDetails struct {

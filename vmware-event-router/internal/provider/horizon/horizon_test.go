@@ -126,7 +126,7 @@ func (f *fakeProcessor) Done() <-chan bool {
 	return f.doneCh
 }
 
-func (f *fakeProcessor) PushMetrics(_ context.Context, _ metrics.Receiver) {}
+func (f *fakeProcessor) PushMetrics(_ context.Context, _ metrics.Processor) {}
 
 func (f *fakeProcessor) Shutdown(_ context.Context) error {
 	return nil

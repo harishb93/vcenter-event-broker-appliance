@@ -56,7 +56,7 @@ var (
 )
 
 // NewProcessor returns a Knative processor for the given configuration
-func NewProcessor(ctx context.Context, cfg *config.ProcessorConfigKnative, ms metrics.Receiver, log logger.Logger, opts ...Option) (*Processor, error) {
+func NewProcessor(ctx context.Context, cfg *config.ProcessorConfigKnative, ms metrics.Processor, log logger.Logger, opts ...Option) (*Processor, error) {
 	kLog := log
 	if zapSugared, ok := log.(*zap.SugaredLogger); ok {
 		proc := strings.ToUpper(string(config.ProcessorKnative))
@@ -195,7 +195,7 @@ func (p *Processor) Process(ctx context.Context, ce cloudevents.Event) error {
 	return nil
 }
 
-func (p *Processor) PushMetrics(ctx context.Context, ms metrics.Receiver) {
+func (p *Processor) PushMetrics(ctx context.Context, ms metrics.Processor) {
 	ticker := time.NewTicker(metrics.PushInterval)
 	defer ticker.Stop()
 

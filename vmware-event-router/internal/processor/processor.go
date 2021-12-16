@@ -13,7 +13,7 @@ import (
 // Processor processes incoming events
 type Processor interface {
 	Process(ctx context.Context, ce cloudevents.Event) error
-	PushMetrics(ctx context.Context, ms metrics.Receiver)
+	PushMetrics(ctx context.Context, ms metrics.Processor)
 	Shutdown(ctx context.Context) error
 }
 

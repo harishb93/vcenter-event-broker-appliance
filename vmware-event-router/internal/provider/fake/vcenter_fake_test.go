@@ -20,7 +20,7 @@ type noOpProcessor struct {
 	invocations int
 }
 
-func (n *noOpProcessor) PushMetrics(_ context.Context, _ metrics.Receiver) {
+func (n *noOpProcessor) PushMetrics(_ context.Context, _ metrics.Processor) {
 }
 
 func (n *noOpProcessor) Shutdown(_ context.Context) error {

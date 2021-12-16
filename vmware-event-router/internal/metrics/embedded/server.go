@@ -4,10 +4,11 @@ import (
 	"context"
 	"expvar"
 	"fmt"
-	"github.com/vmware-samples/vcenter-event-broker-appliance/vmware-event-router/internal/metrics"
 	"net/http"
 	"os"
 	"time"
+
+	"github.com/vmware-samples/vcenter-event-broker-appliance/vmware-event-router/internal/metrics"
 
 	"github.com/pkg/errors"
 	"go.uber.org/zap"
@@ -29,14 +30,21 @@ var (
 	eventRouterStats = expvar.NewMap(mapName)
 )
 
+// Server ...
 type Server struct {
-	*metrics.Server
+	srv *http.Server
+	logger.Logger
 }
 
 // NewServer returns an initialized metrics server binding to addr
 func NewServer(cfg *config.MetricsProviderConfigDefault, log logger.Logger) (*Server, error) {
 	if cfg == nil {
 		return nil, errors.New("no metrics server configuration found")
+	}
+
+	err := util.ValidateAddress(cfg.BindAddress)
+	if err != nil {
+		return nil, errors.Wrap(err, "validate bind address")
 	}
 
 	metricLog := log
@@ -54,23 +62,16 @@ func NewServer(cfg *config.MetricsProviderConfigDefault, log logger.Logger) (*Se
 
 	}
 
-	err := util.ValidateAddress(cfg.BindAddress)
-	if err != nil {
-		metricLog.Errorf("Could not validate bind address")
-		return nil, errors.Wrap(err, "could not validate bind address")
+	httpSrv := &http.Server{
+		Addr:         cfg.BindAddress,
+		Handler:      mux,
+		ReadTimeout:  httpTimeout,
+		WriteTimeout: httpTimeout,
 	}
 
 	srv := &Server{
-		&metrics.Server{
-			Http: &http.Server{
-				Addr:         cfg.BindAddress,
-				Handler:      mux,
-				ReadTimeout:  httpTimeout,
-				WriteTimeout: httpTimeout,
-			},
-			Logger:              metricLog,
-			MetricsProviderType: config.MetricsProviderDefault,
-		},
+		srv:    httpSrv,
+		Logger: metricLog,
 	}
 
 	return srv, nil
@@ -83,9 +84,9 @@ func (s *Server) Run(ctx context.Context) error {
 	defer close(errCh)
 
 	go func() {
-		addr := fmt.Sprintf("http://%s%s", s.Http.Addr, endpoint)
+		addr := fmt.Sprintf("http://%s%s", s.srv.Addr, endpoint)
 		s.Infow("starting metrics server", "address", addr)
-		err := s.Http.ListenAndServe()
+		err := s.srv.ListenAndServe()
 		if err != nil && err != http.ErrServerClosed {
 			errCh <- err
 		}
@@ -98,12 +99,12 @@ func (s *Server) Run(ctx context.Context) error {
 
 	select {
 	case <-ctx.Done():
-		err := s.Http.Shutdown(ctx)
+		err := s.srv.Shutdown(ctx)
 		if err != nil && err != http.ErrServerClosed {
-			return errors.Wrap(err, "could not shutdown metrics server gracefully")
+			return errors.Wrap(err, "shutdown metrics server gracefully")
 		}
 	case err := <-errCh:
-		return errors.Wrap(err, "could not run metrics server")
+		return errors.Wrap(err, "run metrics server")
 	}
 
 	return nil

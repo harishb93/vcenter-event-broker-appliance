@@ -57,7 +57,7 @@ type Server struct {
 }
 
 // NewServer returns a webhook event provider
-func NewServer(ctx context.Context, cfg *config.ProviderConfigWebhook, ms metrics.Receiver, log logger.Logger, opts ...Option) (*Server, error) {
+func NewServer(ctx context.Context, cfg *config.ProviderConfigWebhook, ms metrics.Processor, log logger.Logger, opts ...Option) (*Server, error) {
 	var srv Server
 	if err := util.ValidateAddress(cfg.BindAddress); err != nil {
 		return nil, errors.Wrap(err, "invalid webhook config")
@@ -202,7 +202,7 @@ func (s *Server) Address() string {
 }
 
 // PushMetrics pushes metrics to the configured metrics receiver
-func (s *Server) PushMetrics(ctx context.Context, ms metrics.Receiver) {
+func (s *Server) PushMetrics(ctx context.Context, ms metrics.Processor) {
 	ticker := time.NewTicker(metrics.PushInterval)
 	defer ticker.Stop()
 

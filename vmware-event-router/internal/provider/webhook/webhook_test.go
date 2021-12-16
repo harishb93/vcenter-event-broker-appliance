@@ -11,14 +11,15 @@ import (
 
 	ce "github.com/cloudevents/sdk-go/v2"
 	cehttp "github.com/cloudevents/sdk-go/v2/protocol/http"
-	config "github.com/vmware-samples/vcenter-event-broker-appliance/vmware-event-router/internal/config/v1alpha1"
-	"github.com/vmware-samples/vcenter-event-broker-appliance/vmware-event-router/internal/metrics"
-	"github.com/vmware-samples/vcenter-event-broker-appliance/vmware-event-router/internal/provider/webhook"
 	"go.uber.org/zap"
 	"go.uber.org/zap/zaptest"
 	"golang.org/x/sync/errgroup"
 	"gotest.tools/assert"
 	"knative.dev/pkg/logging"
+
+	config "github.com/vmware-samples/vcenter-event-broker-appliance/vmware-event-router/internal/config/v1alpha1"
+	"github.com/vmware-samples/vcenter-event-broker-appliance/vmware-event-router/internal/metrics"
+	"github.com/vmware-samples/vcenter-event-broker-appliance/vmware-event-router/internal/provider/webhook"
 )
 
 func Test_WebhookServer(t *testing.T) {
@@ -278,7 +279,7 @@ func (f fakeProcessor) Process(ctx context.Context, ce ce.Event) error {
 	return nil
 }
 
-func (f fakeProcessor) PushMetrics(ctx context.Context, ms metrics.Receiver) {}
+func (f fakeProcessor) PushMetrics(ctx context.Context, ms metrics.Processor) {}
 
 func (f fakeProcessor) Shutdown(ctx context.Context) error {
 	return nil

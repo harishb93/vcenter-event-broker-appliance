@@ -84,7 +84,7 @@ type eventPattern struct {
 
 // NewEventBridgeProcessor returns an AWS EventBridge processor for the given
 // configuration
-func NewEventBridgeProcessor(ctx context.Context, cfg *config.ProcessorConfigEventBridge, ms metrics.Receiver, log logger.Logger, opts ...Option) (*EventBridgeProcessor, error) {
+func NewEventBridgeProcessor(ctx context.Context, cfg *config.ProcessorConfigEventBridge, ms metrics.Processor, log logger.Logger, opts ...Option) (*EventBridgeProcessor, error) {
 	awsLog := log
 	if zapSugared, ok := log.(*zap.SugaredLogger); ok {
 		proc := strings.ToUpper(string(config.ProcessorEventBridge))
@@ -351,7 +351,7 @@ func (eb *EventBridgeProcessor) syncRules(ctx context.Context, eventbus, ruleARN
 }
 
 // PushMetrics pushes metrics to the specified metrics receiver
-func (eb *EventBridgeProcessor) PushMetrics(ctx context.Context, ms metrics.Receiver) {
+func (eb *EventBridgeProcessor) PushMetrics(ctx context.Context, ms metrics.Processor) {
 	ticker := time.NewTicker(metrics.PushInterval)
 	defer ticker.Stop()
 
